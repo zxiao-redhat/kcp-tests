@@ -84,6 +84,7 @@ type CLI struct {
 	globalArgs             []string
 	commandArgs            []string
 	finalArgs              []string
+	env                    []string
 	workSpacesToDelete     []WorkSpace
 	stdin                  *bytes.Buffer
 	stdout                 io.Writer
@@ -216,6 +217,16 @@ func NewCLIWithWorkSpace(wsPrefix string) *CLI {
 // specific for Kubernetes resources
 func (c *CLI) KubeFramework() *e2e.Framework {
 	return c.kubeFramework
+}
+
+// AddEnv add environment variable to client instance
+func (c *CLI) AddEnv(env ...string) {
+	c.env = append(c.env, env...)
+}
+
+// ClearEnv clear all environment variables from client instance
+func (c *CLI) ClearEnv() {
+	c.env = []string{}
 }
 
 // Username returns the name of currently logged user. If there is no user assigned
@@ -748,6 +759,7 @@ func (c *CLI) Output() (string, error) {
 		fmt.Printf("DEBUG: oc %s\n", c.printCmd())
 	}
 	cmd := exec.Command(c.execPath, c.finalArgs...)
+	cmd.Env = c.env
 	cmd.Stdin = c.stdin
 	if c.showInfo || IsDebug() {
 		e2e.Logf("Running '%s %s'", c.execPath, strings.Join(c.finalArgs, " "))
@@ -917,6 +929,16 @@ func (c *CLI) CreateUser(prefix string) *userv1.User {
 	c.AddResourceToDelete(userv1.GroupVersion.WithResource("users"), user)
 
 	return user
+}
+
+// CreateServiceAccount create a service account with a random name
+func (c *CLI) CreateServiceAccount() string {
+	saName := names.SimpleNameGenerator.GenerateName(fmt.Sprintf("e2e-test-%s-", c.kubeFramework.BaseName))
+	err := c.Run("create").Args("serviceaccount", saName).Execute()
+	if err != nil {
+		FatalErr(err)
+	}
+	return saName
 }
 
 // GetClientConfigForUser method

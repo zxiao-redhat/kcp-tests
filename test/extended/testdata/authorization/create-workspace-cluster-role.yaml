@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: $(NAME)
+  clusterName: $(WORKSPACE)
+rules:
+- apiGroups:
+  - tenancy.kcp.dev
+  resources:
+  - workspaces/content
+  resourceNames:
+  - ws
+  verbs:
+  - $(VERB)
