@@ -187,6 +187,10 @@ func NewCLI(project, adminConfigPath string) *CLI {
 	return client
 }
 
+func NewCLI() *CLI {
+	
+}
+
 // NewCLIWithWorkSpace initialize the upstream E2E framework with adding a
 // workspace. You may also call SetupWorkSpace() to create a new one.
 // The workspace named "e2e-test-"" + wsPrefix + 5Bytes random string
